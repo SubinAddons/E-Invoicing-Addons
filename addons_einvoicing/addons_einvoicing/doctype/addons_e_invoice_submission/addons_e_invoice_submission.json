@@ -1,0 +1,304 @@
+{
+  "doctype": "DocType",
+  "name": "Addons E Invoice Submission",
+  "module": "Addons Einvoicing",
+  "custom": 0,
+  "istable": 0,
+  "issingle": 0,
+  "autoname": "hash",
+  "track_changes": 0,
+  "engine": "InnoDB",
+  "field_order": [
+    "company",
+    "connection",
+    "sales_invoice",
+    "source_key",
+    "environment",
+    "org_id",
+    "business_profile_id",
+    "api_version",
+    "document_kind",
+    "operation",
+    "status",
+    "provider_uuid",
+    "external_key",
+    "overall_status",
+    "participant_status",
+    "fta_status",
+    "is_phase2",
+    "attempts",
+    "retry_count",
+    "next_retry_at",
+    "last_attempt_at",
+    "last_checked_at",
+    "payload_hash",
+    "last_error",
+    "request_json",
+    "expected_json",
+    "response_json",
+    "validation_json",
+    "pdf_file",
+    "xml_file",
+    "provider",
+    "provider_account_id",
+    "supplier_trn",
+    "compliance_file",
+    "reconciliation_note"
+  ],
+  "fields": [
+    {
+      "fieldname": "company",
+      "label": "Company",
+      "fieldtype": "Link",
+      "options": "Company",
+      "reqd": 1,
+      "in_list_view": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "connection",
+      "label": "Connection",
+      "fieldtype": "Link",
+      "options": "Addons E Invoice Settings",
+      "reqd": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "sales_invoice",
+      "label": "Sales Invoice",
+      "fieldtype": "Link",
+      "options": "Sales Invoice",
+      "reqd": 1,
+      "in_list_view": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "source_key",
+      "label": "Source Key",
+      "fieldtype": "Data",
+      "unique": 1,
+      "hidden": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "environment",
+      "label": "Environment",
+      "fieldtype": "Data",
+      "read_only": 1
+    },
+    {
+      "fieldname": "org_id",
+      "label": "Org Id",
+      "fieldtype": "Data",
+      "read_only": 1
+    },
+    {
+      "fieldname": "business_profile_id",
+      "label": "Business Profile Id",
+      "fieldtype": "Data",
+      "read_only": 1
+    },
+    {
+      "fieldname": "api_version",
+      "label": "Api Version",
+      "fieldtype": "Data",
+      "read_only": 1
+    },
+    {
+      "fieldname": "document_kind",
+      "label": "Document Kind",
+      "fieldtype": "Data",
+      "read_only": 1
+    },
+    {
+      "fieldname": "operation",
+      "label": "Operation",
+      "fieldtype": "Select",
+      "options": "Create\nResubmit",
+      "read_only": 1
+    },
+    {
+      "fieldname": "status",
+      "label": "Status",
+      "fieldtype": "Select",
+      "options": "Queued\nSending\nRetry\nUnknown\nCreated\nProcessing\nApproved\nValidation Failed\nRejected\nMismatch\nError\nStopped",
+      "in_list_view": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "provider_uuid",
+      "label": "Provider Uuid",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "external_key",
+      "label": "External Key",
+      "fieldtype": "Data",
+      "unique": 1,
+      "hidden": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "overall_status",
+      "label": "Overall Status",
+      "fieldtype": "Data",
+      "read_only": 1
+    },
+    {
+      "fieldname": "participant_status",
+      "label": "Participant Status",
+      "fieldtype": "Data",
+      "read_only": 1
+    },
+    {
+      "fieldname": "fta_status",
+      "label": "Fta Status",
+      "fieldtype": "Data",
+      "read_only": 1
+    },
+    {
+      "fieldname": "is_phase2",
+      "label": "Is Phase2",
+      "fieldtype": "Check",
+      "read_only": 1
+    },
+    {
+      "fieldname": "attempts",
+      "label": "Attempts",
+      "fieldtype": "Int",
+      "read_only": 1
+    },
+    {
+      "fieldname": "retry_count",
+      "label": "Retry Count",
+      "fieldtype": "Int",
+      "read_only": 1
+    },
+    {
+      "fieldname": "next_retry_at",
+      "label": "Next Retry At",
+      "fieldtype": "Datetime",
+      "read_only": 1
+    },
+    {
+      "fieldname": "last_attempt_at",
+      "label": "Last Attempt At",
+      "fieldtype": "Datetime",
+      "read_only": 1
+    },
+    {
+      "fieldname": "last_checked_at",
+      "label": "Last Checked At",
+      "fieldtype": "Datetime",
+      "read_only": 1
+    },
+    {
+      "fieldname": "payload_hash",
+      "label": "Payload Hash",
+      "fieldtype": "Data",
+      "read_only": 1
+    },
+    {
+      "fieldname": "last_error",
+      "label": "Last Error",
+      "fieldtype": "Small Text",
+      "read_only": 1
+    },
+    {
+      "fieldname": "request_json",
+      "label": "Request Json",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "read_only": 1
+    },
+    {
+      "fieldname": "expected_json",
+      "label": "Expected Json",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "read_only": 1
+    },
+    {
+      "fieldname": "response_json",
+      "label": "Response Json",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "read_only": 1
+    },
+    {
+      "fieldname": "validation_json",
+      "label": "Validation Json",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "read_only": 1
+    },
+    {
+      "fieldname": "pdf_file",
+      "label": "Pdf File",
+      "fieldtype": "Attach",
+      "read_only": 1
+    },
+    {
+      "fieldname": "xml_file",
+      "label": "Xml File",
+      "fieldtype": "Attach",
+      "read_only": 1
+    },
+    {
+      "fieldname": "provider",
+      "label": "API Provider",
+      "fieldtype": "Select",
+      "read_only": 1,
+      "options": "ArdentaxIT\nFynamics",
+      "default": "ArdentaxIT",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "provider_account_id",
+      "label": "Provider Client ID",
+      "fieldtype": "Data",
+      "read_only": 1
+    },
+    {
+      "fieldname": "supplier_trn",
+      "label": "Supplier VAT TRN",
+      "fieldtype": "Data",
+      "read_only": 1
+    },
+    {
+      "fieldname": "compliance_file",
+      "label": "Compliance Download",
+      "fieldtype": "Attach",
+      "read_only": 1
+    },
+    {
+      "fieldname": "reconciliation_note",
+      "label": "Amount Reconciliation",
+      "fieldtype": "Small Text",
+      "read_only": 1
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0,
+      "report": 1,
+      "export": 0,
+      "share": 0
+    },
+    {
+      "role": "Addons E Invoice Operator",
+      "read": 1,
+      "report": 1,
+      "export": 0,
+      "share": 0
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC"
+}

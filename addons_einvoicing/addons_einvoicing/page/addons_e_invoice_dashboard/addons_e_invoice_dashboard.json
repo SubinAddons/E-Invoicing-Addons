@@ -1,0 +1,16 @@
+{
+  "doctype": "Page",
+  "name": "addons-e-invoice-dashboard",
+  "page_name": "addons-e-invoice-dashboard",
+  "title": "Addons - E invoicing",
+  "module": "Addons Einvoicing",
+  "standard": "Yes",
+  "roles": [
+    {
+      "role": "System Manager"
+    },
+    {
+      "role": "Addons E Invoice Operator"
+    }
+  ]
+}

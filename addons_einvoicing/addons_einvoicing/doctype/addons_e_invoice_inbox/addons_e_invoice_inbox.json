@@ -1,0 +1,118 @@
+{
+  "doctype": "DocType",
+  "name": "Addons E Invoice Inbox",
+  "module": "Addons Einvoicing",
+  "custom": 0,
+  "istable": 0,
+  "issingle": 0,
+  "autoname": "hash",
+  "track_changes": 0,
+  "engine": "InnoDB",
+  "field_order": [
+    "company",
+    "connection",
+    "external_key",
+    "provider_uuid",
+    "document_kind",
+    "document_number",
+    "status",
+    "response_json",
+    "last_received_at",
+    "notes"
+  ],
+  "fields": [
+    {
+      "fieldname": "company",
+      "label": "Company",
+      "fieldtype": "Link",
+      "options": "Company",
+      "reqd": 1,
+      "in_list_view": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "connection",
+      "label": "Connection",
+      "fieldtype": "Link",
+      "options": "Addons E Invoice Settings",
+      "reqd": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "external_key",
+      "label": "External Key",
+      "fieldtype": "Data",
+      "unique": 1,
+      "hidden": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "provider_uuid",
+      "label": "Provider Uuid",
+      "fieldtype": "Data",
+      "reqd": 1,
+      "in_list_view": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "document_kind",
+      "label": "Document Kind",
+      "fieldtype": "Data",
+      "read_only": 1
+    },
+    {
+      "fieldname": "document_number",
+      "label": "Document Number",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "status",
+      "label": "Status",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "response_json",
+      "label": "Response Json",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "read_only": 1
+    },
+    {
+      "fieldname": "last_received_at",
+      "label": "Last Received At",
+      "fieldtype": "Datetime",
+      "read_only": 1
+    },
+    {
+      "fieldname": "notes",
+      "label": "Notes",
+      "fieldtype": "Small Text",
+      "read_only": 1
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0,
+      "report": 1,
+      "export": 0,
+      "share": 0
+    },
+    {
+      "role": "Addons E Invoice Operator",
+      "read": 1,
+      "report": 1,
+      "export": 0,
+      "share": 0
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC"
+}

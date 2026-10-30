@@ -1,0 +1,247 @@
+{
+  "doctype": "DocType",
+  "name": "Addons E Invoice Settings",
+  "module": "Addons Einvoicing",
+  "custom": 0,
+  "istable": 0,
+  "issingle": 0,
+  "autoname": "field:company",
+  "track_changes": 1,
+  "engine": "InnoDB",
+  "field_order": [
+    "company",
+    "provider",
+    "enabled",
+    "auto_submit",
+    "environment",
+    "api_base_url",
+    "api_version",
+    "production_verified",
+    "credit_notes_verified",
+    "org_id",
+    "business_profile_id",
+    "client_id",
+    "client_secret",
+    "webhook_secret",
+    "previous_webhook_secret",
+    "webhook_url",
+    "uom_mappings",
+    "tax_mappings",
+    "notes",
+    "fynamics_section",
+    "supplier_address",
+    "supplier_endpoint",
+    "supplier_scheme",
+    "supplier_registration",
+    "supplier_registration_scheme",
+    "supplier_authority",
+    "supplier_email"
+  ],
+  "fields": [
+    {
+      "fieldname": "company",
+      "label": "Company",
+      "fieldtype": "Link",
+      "options": "Company",
+      "reqd": 1,
+      "unique": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "provider",
+      "label": "API Provider",
+      "fieldtype": "Select",
+      "options": "ArdentaxIT\nFynamics",
+      "default": "ArdentaxIT",
+      "reqd": 1,
+      "description": "Select the API provider for this company. Provider cannot change once history exists."
+    },
+    {
+      "fieldname": "enabled",
+      "label": "Enabled",
+      "fieldtype": "Check",
+      "default": "0",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "auto_submit",
+      "label": "Queue on Sales Invoice Submit",
+      "fieldtype": "Check",
+      "default": "0"
+    },
+    {
+      "fieldname": "environment",
+      "label": "Environment",
+      "fieldtype": "Select",
+      "options": "Sandbox\nProduction",
+      "default": "Sandbox",
+      "reqd": 1
+    },
+    {
+      "fieldname": "api_base_url",
+      "label": "Api Base Url",
+      "fieldtype": "Data",
+      "default": "https://api-sandbox.ae.ardentaxit.tax",
+      "reqd": 1
+    },
+    {
+      "fieldname": "api_version",
+      "label": "Api Version",
+      "fieldtype": "Select",
+      "options": "20260507",
+      "default": "20260507",
+      "reqd": 0,
+      "depends_on": "eval:doc.provider==\"ArdentaxIT\"",
+      "mandatory_depends_on": "eval:doc.provider==\"ArdentaxIT\""
+    },
+    {
+      "fieldname": "production_verified",
+      "label": "Sandbox Acceptance Completed",
+      "fieldtype": "Check",
+      "default": "0"
+    },
+    {
+      "fieldname": "credit_notes_verified",
+      "label": "Credit Note Contract Verified",
+      "fieldtype": "Check",
+      "default": "0",
+      "description": "Confirm credit-note type, positive quantities and original invoice-number reference with the selected provider in sandbox."
+    },
+    {
+      "fieldname": "org_id",
+      "label": "Org Id",
+      "fieldtype": "Data",
+      "reqd": 0,
+      "depends_on": "eval:doc.provider==\"ArdentaxIT\"",
+      "mandatory_depends_on": "eval:doc.provider==\"ArdentaxIT\""
+    },
+    {
+      "fieldname": "business_profile_id",
+      "label": "Business Profile Id",
+      "fieldtype": "Data",
+      "reqd": 0,
+      "depends_on": "eval:doc.provider==\"ArdentaxIT\"",
+      "mandatory_depends_on": "eval:doc.provider==\"ArdentaxIT\""
+    },
+    {
+      "fieldname": "client_id",
+      "label": "Client Id",
+      "fieldtype": "Data",
+      "reqd": 1
+    },
+    {
+      "fieldname": "client_secret",
+      "label": "Client Secret",
+      "fieldtype": "Password",
+      "reqd": 1
+    },
+    {
+      "fieldname": "webhook_secret",
+      "label": "Webhook Secret",
+      "fieldtype": "Password"
+    },
+    {
+      "fieldname": "previous_webhook_secret",
+      "label": "Previous Webhook Secret",
+      "fieldtype": "Password",
+      "description": "Optional overlap during signing-secret rotation; remove after provider rotation completes."
+    },
+    {
+      "fieldname": "webhook_url",
+      "label": "Webhook Url",
+      "fieldtype": "Data",
+      "read_only": 1
+    },
+    {
+      "fieldname": "uom_mappings",
+      "label": "Uom Mappings",
+      "fieldtype": "Table",
+      "options": "Addons E Invoice UOM Mapping"
+    },
+    {
+      "fieldname": "tax_mappings",
+      "label": "Tax Mappings",
+      "fieldtype": "Table",
+      "options": "Addons E Invoice Tax Mapping"
+    },
+    {
+      "fieldname": "notes",
+      "label": "Notes",
+      "fieldtype": "Small Text"
+    },
+    {
+      "fieldname": "fynamics_section",
+      "label": "Fynamics Supplier Details",
+      "fieldtype": "Section Break",
+      "depends_on": "eval:doc.provider==\"Fynamics\""
+    },
+    {
+      "fieldname": "supplier_address",
+      "label": "Company Billing Address",
+      "fieldtype": "Link",
+      "depends_on": "eval:doc.provider==\"Fynamics\"",
+      "mandatory_depends_on": "eval:doc.provider==\"Fynamics\"",
+      "options": "Address"
+    },
+    {
+      "fieldname": "supplier_endpoint",
+      "label": "Supplier Peppol Endpoint ID",
+      "fieldtype": "Data",
+      "depends_on": "eval:doc.provider==\"Fynamics\"",
+      "mandatory_depends_on": "eval:doc.provider==\"Fynamics\""
+    },
+    {
+      "fieldname": "supplier_scheme",
+      "label": "Supplier Endpoint Scheme",
+      "fieldtype": "Data",
+      "depends_on": "eval:doc.provider==\"Fynamics\"",
+      "mandatory_depends_on": "eval:doc.provider==\"Fynamics\"",
+      "default": "0235"
+    },
+    {
+      "fieldname": "supplier_registration",
+      "label": "Supplier Legal Registration ID",
+      "fieldtype": "Data",
+      "depends_on": "eval:doc.provider==\"Fynamics\"",
+      "mandatory_depends_on": "eval:doc.provider==\"Fynamics\""
+    },
+    {
+      "fieldname": "supplier_registration_scheme",
+      "label": "Registration Scheme (e.g. TL)",
+      "fieldtype": "Data",
+      "depends_on": "eval:doc.provider==\"Fynamics\"",
+      "mandatory_depends_on": "eval:doc.provider==\"Fynamics\"",
+      "default": "TL"
+    },
+    {
+      "fieldname": "supplier_authority",
+      "label": "Registration Issuing Authority",
+      "fieldtype": "Data",
+      "depends_on": "eval:doc.provider==\"Fynamics\"",
+      "mandatory_depends_on": "eval:doc.provider==\"Fynamics\""
+    },
+    {
+      "fieldname": "supplier_email",
+      "label": "Supplier E-Invoice Email",
+      "fieldtype": "Data",
+      "depends_on": "eval:doc.provider==\"Fynamics\"",
+      "mandatory_depends_on": "eval:doc.provider==\"Fynamics\"",
+      "options": "Email"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 0,
+      "report": 1,
+      "export": 0,
+      "share": 0
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "title_field": "company"
+}

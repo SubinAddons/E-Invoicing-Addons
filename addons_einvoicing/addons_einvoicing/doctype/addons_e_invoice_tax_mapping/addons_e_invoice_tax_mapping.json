@@ -1,0 +1,55 @@
+{
+  "doctype": "DocType",
+  "name": "Addons E Invoice Tax Mapping",
+  "module": "Addons Einvoicing",
+  "custom": 0,
+  "istable": 1,
+  "issingle": 0,
+  "autoname": "hash",
+  "track_changes": 0,
+  "engine": "InnoDB",
+  "field_order": [
+    "item_tax_template",
+    "category",
+    "rate",
+    "exemption_code",
+    "exemption_reason"
+  ],
+  "fields": [
+    {
+      "fieldname": "item_tax_template",
+      "label": "Item Tax Template",
+      "fieldtype": "Link",
+      "options": "Item Tax Template",
+      "in_list_view": 1,
+      "description": "Blank is the default for lines without an Item Tax Template."
+    },
+    {
+      "fieldname": "category",
+      "label": "Category",
+      "fieldtype": "Select",
+      "options": "S\nZ\nE\nO",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "rate",
+      "label": "Rate",
+      "fieldtype": "Percent",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "exemption_code",
+      "label": "Exemption Code",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "exemption_reason",
+      "label": "Exemption Reason",
+      "fieldtype": "Data"
+    }
+  ],
+  "permissions": [],
+  "sort_field": "modified",
+  "sort_order": "DESC"
+}

@@ -1,0 +1,127 @@
+{
+  "doctype": "DocType",
+  "name": "Addons E Invoice Webhook Event",
+  "module": "Addons Einvoicing",
+  "custom": 0,
+  "istable": 0,
+  "issingle": 0,
+  "autoname": "hash",
+  "track_changes": 0,
+  "engine": "InnoDB",
+  "field_order": [
+    "company",
+    "connection",
+    "event_key",
+    "webhook_event_id",
+    "resource_id",
+    "event_type",
+    "payload_json",
+    "status",
+    "attempts",
+    "next_retry_at",
+    "last_error"
+  ],
+  "fields": [
+    {
+      "fieldname": "company",
+      "label": "Company",
+      "fieldtype": "Link",
+      "options": "Company",
+      "reqd": 1,
+      "in_list_view": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "connection",
+      "label": "Connection",
+      "fieldtype": "Link",
+      "options": "Addons E Invoice Settings",
+      "reqd": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "event_key",
+      "label": "Event Key",
+      "fieldtype": "Data",
+      "unique": 1,
+      "hidden": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "webhook_event_id",
+      "label": "Webhook Event Id",
+      "fieldtype": "Data",
+      "reqd": 1,
+      "in_list_view": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "resource_id",
+      "label": "Resource Id",
+      "fieldtype": "Data",
+      "reqd": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "event_type",
+      "label": "Event Type",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "payload_json",
+      "label": "Payload Json",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "read_only": 1
+    },
+    {
+      "fieldname": "status",
+      "label": "Status",
+      "fieldtype": "Select",
+      "options": "Pending\nProcessed\nError",
+      "in_list_view": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "attempts",
+      "label": "Attempts",
+      "fieldtype": "Int",
+      "read_only": 1
+    },
+    {
+      "fieldname": "next_retry_at",
+      "label": "Next Retry At",
+      "fieldtype": "Datetime",
+      "read_only": 1
+    },
+    {
+      "fieldname": "last_error",
+      "label": "Last Error",
+      "fieldtype": "Small Text",
+      "read_only": 1
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0,
+      "report": 1,
+      "export": 0,
+      "share": 0
+    },
+    {
+      "role": "Addons E Invoice Operator",
+      "read": 1,
+      "report": 1,
+      "export": 0,
+      "share": 0
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC"
+}
