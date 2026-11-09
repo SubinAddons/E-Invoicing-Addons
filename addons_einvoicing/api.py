@@ -178,11 +178,13 @@ def dashboard(company=None, environment=None, days=30):
     if environment:
         filters["environment"] = environment
     doctype = "Addons E Invoice Submission"
-    counts = frappe.get_list(doctype, filters=filters, fields=["status", "count(name) as total"], group_by="status", limit_page_length=0)
+    from addons_einvoicing.dashboard import summarize
+    # Keep permission filtering in get_list; aggregate plain fields for v15/v16.
+    rows = frappe.get_list(doctype, filters=filters, fields=["status", "creation"],
+        order_by="creation asc", limit_page_length=0)
+    counts, trend = summarize(rows)
     recent = frappe.get_list(doctype, filters=filters,
         fields=["name", "sales_invoice", "company", "provider", "status", "environment", "modified"], order_by="modified desc", limit_page_length=20)
-    trend = frappe.get_list(doctype, filters=filters,
-        fields=["date(creation) as day", "count(name) as total"], group_by="date(creation)", order_by="day asc", limit_page_length=0)
     attention = frappe.get_list(doctype, filters={**filters, "status": ["in", ["Unknown", "Mismatch", "Error", "Rejected", "Validation Failed"]]},
         fields=["name", "sales_invoice", "status"], order_by="modified desc", limit_page_length=5)
     settings = []
