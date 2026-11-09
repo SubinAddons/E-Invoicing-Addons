@@ -23,8 +23,9 @@ def has_permission(doc, user=None, ptype=None):
     if doc.doctype == "Addons E Invoice Audit" and doc.submission:
         if not frappe.has_permission("Addons E Invoice Submission", "read", doc=doc.submission, user=user):
             return False
-    # None leaves the standard role/DocType checks in effect.
-    return None
+    # v16 treats None as denial. True passes this hook only; standard role
+    # and document permissions still apply in both supported versions.
+    return True
 
 
 def require_operator(invoice):
