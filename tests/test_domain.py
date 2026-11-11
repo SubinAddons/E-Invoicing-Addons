@@ -18,6 +18,34 @@ class MappingTests(unittest.TestCase):
         self.assertEqual(e['payable_amount'],210)
         self.assertNotIn('accounting_supplier_party',p)
         self.assertNotIn('tax_amount',p)
+    def test_buyer_registration_and_full_endpoint(self):
+        f=fixture();f[1].update(custom_addons_einv_registration_id='12345678',custom_addons_einv_registration_type='CD',custom_addons_einv_telephone='+971501234567',custom_addons_einv_endpoint_id='0235:1000000001')
+        p,_=build_payload(*f);b=p['accounting_customer_party']
+        self.assertEqual(b['endpoint_id'],'1000000001')
+        self.assertEqual(b['company_id'],'12345678')
+        self.assertEqual(b['scheme_agency_id'],'CD')
+        self.assertEqual(b['telephone'],'+971501234567')
+    def test_registration_pair_required(self):
+        f=fixture();f[1]['custom_addons_einv_registration_id']='12345678'
+        with self.assertRaisesRegex(MappingError,'together'):build_payload(*f)
+    def test_endpoint_scheme_mismatch(self):
+        f=fixture();f[1]['custom_addons_einv_endpoint_id']='9999:1000000001'
+        with self.assertRaisesRegex(MappingError,'scheme'):build_payload(*f)
+    def test_deemed_supply_endpoint_is_scenario_specific(self):
+        f=fixture();f[0]['custom_addons_einv_profile_execution_id']='01000000'
+        p,_=build_payload(*f)
+        self.assertEqual(p['accounting_customer_party']['endpoint_id'],'9900000097')
+        self.assertEqual(f[1]['custom_addons_einv_endpoint_id'],'1000000001')
+        f[0]['custom_addons_einv_profile_execution_id']='00000000'
+        p,_=build_payload(*f);self.assertEqual(p['accounting_customer_party']['endpoint_id'],'1000000001')
+    def test_deemed_supply_provider_and_production_guards(self):
+        f=fixture();f[0]['custom_addons_einv_profile_execution_id']='01000000';f[4]['provider']='Fynamics'
+        with self.assertRaisesRegex(MappingError,'ArdentaxIT'):build_payload(*f)
+        f[4].update(provider='ArdentaxIT',environment='Production')
+        with self.assertRaisesRegex(MappingError,'verification'):build_payload(*f)
+    def test_standard_cannot_use_deemed_endpoint(self):
+        f=fixture();f[1]['custom_addons_einv_endpoint_id']='9900000097'
+        with self.assertRaisesRegex(MappingError,'Substitute'):build_payload(*f)
     def test_timezone_rolls_date(self):
         f=list(fixture());f[0]['posting_time']='00:30:00';f[-1]='Asia/Kolkata'
         p,_=build_payload(*f)

@@ -44,7 +44,7 @@ def invoice_status(sales_invoice):
     if not set(frappe.get_roles()) & {"Addons E Invoice Operator", "System Manager"}:
         return []
     return frappe.get_list("Addons E Invoice Submission", filters={"sales_invoice": invoice.name},
-        fields=["name", "status", "environment", "provider_uuid", "last_error"], order_by="creation desc")
+        fields=["name", "status", "environment", "provider_uuid", "provider", "last_error"], order_by="creation desc")
 
 
 @frappe.whitelist(methods=["POST"])
@@ -81,7 +81,7 @@ def correct_and_retry(submission):
 
 
 @frappe.whitelist(methods=["POST"])
-def download_artifacts(submission):
+def download_artifacts(submission, pdf_only=False):
     from addons_einvoicing.jobs import checked_connection, lock, route
     from frappe.utils.file_manager import save_file
     with lock(submission):
@@ -94,6 +94,8 @@ def download_artifacts(submission):
             return download(doc, connection)
         c = client(connection)
         for field, suffix, extension, mime in (("pdf_file", "download-pdf", "pdf", "application/pdf"), ("xml_file", "xml", "xml", "xml")):
+            if pdf_only and extension != "pdf":
+                continue
             if doc.get(field):
                 continue
             data, content_type = c.request("GET", route(doc) + "/" + quote(doc.provider_uuid, safe="") + "/" + suffix, binary=True)
@@ -106,6 +108,20 @@ def download_artifacts(submission):
         internal_save(doc)
         audit(doc, "Artifacts downloaded", {"pdf": bool(doc.pdf_file), "xml": bool(doc.xml_file)})
         return {"pdf_file": doc.pdf_file, "xml_file": doc.xml_file}
+
+
+@frappe.whitelist(methods=["POST"])
+def download_invoice_pdf(sales_invoice):
+    """Fetch the original provider PDF only for the latest approved invoice."""
+    from addons_einvoicing.invoice_output import latest_submission
+    invoice = source(sales_invoice)
+    row = latest_submission(invoice.name)
+    if invoice.docstatus != 1 or not row or row.status != "Approved" or not row.provider_uuid:
+        frappe.throw("The latest e-invoice submission must be approved before downloading")
+    if row.provider != "ArdentaxIT":
+        frappe.throw("Use View Submissions to download this provider's documents")
+    result = download_artifacts(row.name, pdf_only=True)
+    return {"pdf_file": result["pdf_file"]}
 
 
 @frappe.whitelist(methods=["POST"])

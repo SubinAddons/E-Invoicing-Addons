@@ -9,6 +9,7 @@ after_install = "addons_einvoicing.install.setup"
 after_migrate = "addons_einvoicing.install.setup"
 doctype_js = {"Sales Invoice": "public/js/sales_invoice.js"}
 doc_events = {
+    "Customer": {"validate": "addons_einvoicing.customer.validate"},
     "Sales Invoice": {
         "before_submit": "addons_einvoicing.events.before_submit",
         "on_submit": "addons_einvoicing.events.on_submit",

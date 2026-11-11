@@ -76,6 +76,24 @@ def party(customer, address, country_code):
         "endpoint_scheme_id": required(customer, "custom_addons_einv_endpoint_scheme", "Customer endpoint scheme"),
         "postal_address": postal,
     }
+    registration = customer.get("custom_addons_einv_registration_id")
+    registration_type = customer.get("custom_addons_einv_registration_type")
+    if bool(registration) != bool(registration_type):
+        raise MappingError("Buyer registration ID and registration type must be supplied together")
+    for source, target in {
+        "custom_addons_einv_telephone": "telephone",
+        "custom_addons_einv_registration_id": "company_id",
+        "custom_addons_einv_registration_type": "scheme_agency_id",
+        "custom_addons_einv_registration_authority": "authority_name",
+    }.items():
+        if customer.get(source):
+            out[target] = str(customer[source]).strip()
+    # Accept a copied full Peppol ID without duplicating its scheme in the API.
+    if ":" in out["endpoint_id"]:
+        scheme, endpoint = out["endpoint_id"].split(":", 1)
+        if scheme != out["endpoint_scheme_id"] or not endpoint or ":" in endpoint:
+            raise MappingError("Customer Peppol ID does not match the endpoint scheme")
+        out["endpoint_id"] = endpoint
     if not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", out["email"]):
         raise MappingError("Invalid customer e-invoice email")
     if country_code == "AE":
@@ -105,15 +123,25 @@ def build_payload(invoice, customer, address, country_code, config, source_timez
     if number(inv.get("total_advance")) or number(inv.get("paid_amount")):
         raise MappingError("Invoices with advances/prepayments require a separately validated mapping")
     flags = inv.get("custom_addons_einv_profile_execution_id") or "00000000"
-    if flags not in {"00000000", "00000001", "00000010", "00000011"}:
-        raise MappingError("Supported profiles: standard, export, e-commerce, or export e-commerce")
+    if flags not in {"00000000", "00000001", "00000010", "00000011", "01000000"}:
+        raise MappingError("Supported profiles: standard, export, e-commerce, export e-commerce, or deemed supply")
     doc_type = inv.get("custom_addons_einv_type_code") or "380"
     if doc_type not in {"380", "480"}:
         raise MappingError("Invoice type must be 380 or 480")
     buyer = party(customer, address, country_code)
     if flags[-1] == "1" and country_code.upper() == "AE":
         raise MappingError("Export buyer must be outside UAE")
-    if buyer["endpoint_id"] in {"9900000097", "9900000099"} and not (flags[-1] == "1" and buyer["endpoint_id"] == "9900000099"):
+    if flags == "01000000":
+        if config.get("environment") == "Production":
+            raise MappingError("Deemed Supply requires provider contract verification before production use")
+        if config.get("provider") == "Fynamics":
+            raise MappingError("Deemed Supply is currently supported only by ArdentaxIT")
+        if country_code.upper() != "AE" or is_return:
+            raise MappingError("Deemed Supply currently supports domestic UAE invoices only")
+        # The sandbox-generated INV-47 uses this endpoint for Deemed Supply.
+        # Keep the customer's real endpoint unchanged in the master record.
+        buyer["endpoint_id"], buyer["endpoint_scheme_id"] = "9900000097", "0235"
+    if buyer["endpoint_id"] in {"9900000097", "9900000099"} and not ((flags[-1] == "1" and buyer["endpoint_id"] == "9900000099") or (flags == "01000000" and buyer["endpoint_id"] == "9900000097")):
         raise MappingError("Substitute endpoint does not match the transaction profile")
     taxes = inv.get("taxes") or []
     if len(taxes) > 1 or any(t.get("charge_type") != "On Net Total" for t in taxes):
