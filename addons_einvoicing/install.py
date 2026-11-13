@@ -78,6 +78,9 @@ def setup():
         f("buyer_reference", "E-Invoice Buyer Reference"),
         f("note", "E-Invoice Note", "Small Text")
     ]
+    from addons_einvoicing.form_layout import arrange
+    for doctype in ("Customer", "Supplier", "Sales Invoice", "Purchase Invoice"):
+        fields[doctype] = arrange(fields[doctype], frappe.get_doc("DocType", doctype).fields)
     create_custom_fields(fields, update=True)
     if not frappe.db.exists("Workspace", "Addons - E invoicing"):
         shortcuts = [{"label": title, "type": "DocType", "link_to": target} for title, target in [
