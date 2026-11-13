@@ -20,6 +20,9 @@ def has_permission(doc, user=None, ptype=None):
     if doc.doctype == "Addons E Invoice Submission" and doc.sales_invoice:
         if not frappe.has_permission("Sales Invoice", "read", doc=doc.sales_invoice, user=user):
             return False
+    if doc.doctype == "Addons E Invoice Submission" and getattr(doc, "purchase_invoice", None):
+        if not frappe.has_permission("Purchase Invoice", "read", doc=doc.purchase_invoice, user=user):
+            return False
     if doc.doctype == "Addons E Invoice Audit" and doc.submission:
         if not frappe.has_permission("Addons E Invoice Submission", "read", doc=doc.submission, user=user):
             return False

@@ -12,7 +12,7 @@ def setup():
     def f(name, label, fieldtype="Data", **kw):
         return dict(fieldname="custom_addons_einv_" + name, label=label, fieldtype=fieldtype, **kw)
     required_customer = {"mandatory_depends_on": "eval:doc.custom_addons_einv_enabled"}
-    create_custom_fields({
+    fields = {
         "Customer": [
             f("section", "Addons - E invoicing", "Section Break", insert_after="customer_name"),
             f("enabled", "Enable E-Invoicing", "Check", default="0"),
@@ -36,7 +36,49 @@ def setup():
             f("aed_rate", "AED per Invoice Currency Unit", "Float", precision="8"),
             f("discrepancy", "Credit Note Discrepancy Code", "Select", options="\nDL8.61.1.A\nDL8.61.1.B\nDL8.61.1.C\nDL8.61.1.D\nDL8.61.1.E\nVD", allow_on_submit=1),
         ],
-    }, update=True)
+    }
+    from copy import deepcopy
+    fields["Supplier"] = deepcopy(fields["Customer"])
+    for field in fields["Supplier"]:
+        if field.get("insert_after") == "customer_name": field["insert_after"] = "supplier_name"
+        field["label"] = field["label"].replace("Buyer", "Supplier")
+    for field in fields["Supplier"]:
+        key = field["fieldname"].removeprefix("custom_addons_einv_")
+        if key in {"telephone", "tin"}:
+            field["mandatory_depends_on"] = "eval:doc.custom_addons_einv_enabled"
+        if key in {"registration_id", "registration_type"}:
+            other = "registration_type" if key == "registration_id" else "registration_id"
+            field["mandatory_depends_on"] = "eval:doc.custom_addons_einv_enabled && (doc.custom_addons_einv_endpoint_scheme == '0235' || doc.custom_addons_einv_" + other + ")"
+        if key == "registration_authority":
+            field["mandatory_depends_on"] = "eval:doc.custom_addons_einv_enabled && doc.custom_addons_einv_registration_type == 'TL'"
+    fields["Supplier"] += [
+        f("passport_country", "Passport Issuing Country", "Link", options="Country", mandatory_depends_on="eval:doc.custom_addons_einv_enabled && doc.custom_addons_einv_registration_type == 'PAS'"),
+        f("party_id", "Supplier Party Identification", description="Optional identifier distinct from the Peppol endpoint and VAT TRN."),
+        f("party_scheme", "Supplier Party Identification Scheme", description="Optional ISO 6523 ICD code. Enter a Party Identification when using this field.")
+    ]
+    fields["Purchase Invoice"] = deepcopy(fields["Sales Invoice"])
+    for field in fields["Purchase Invoice"]:
+        if field.get("insert_after") == "customer": field["insert_after"] = "supplier"
+        if field["fieldname"].endswith("type_code"):
+            field.update(options="389", default="389", read_only=1, description="Ardentax purchase API creates a self-billed invoice.")
+        if field["fieldname"].endswith("profile_execution_id"):
+            field.update(options="00000000", default="00000000", description="Standard purchase self-billing")
+    for field in fields["Purchase Invoice"]:
+        key = field["fieldname"].removeprefix("custom_addons_einv_")
+        if key == "payment_code":
+            field.update(fieldtype="Select", options="\n1\n10\n20\n21\n30\n68", mandatory_depends_on="eval:doc.custom_addons_einv_enabled", description="1 Undefined; 10 Cash; 20 Cheque; 21 Banker's draft; 30 Credit transfer; 68 Online payment. Select the actual method.")
+        if key == "aed_rate":
+            field["mandatory_depends_on"] = "eval:doc.custom_addons_einv_enabled && doc.currency != 'AED'"
+        if key == "discrepancy":
+            field["hidden"] = 1
+    fields["Purchase Invoice"] += [
+        f("self_billing", "Confirm Self Billing", "Check", default="0", no_copy=1, description="This sends a buyer-issued invoice with type 389. It does not upload an ordinary supplier invoice."),
+        f("bank_account", "Supplier Payment Account Identifier", description="Required for payment means code 30.", mandatory_depends_on="eval:doc.custom_addons_einv_enabled && doc.custom_addons_einv_payment_code == '30'"),
+        f("bank_account_name", "Supplier Payment Account Name"),
+        f("buyer_reference", "E-Invoice Buyer Reference"),
+        f("note", "E-Invoice Note", "Small Text")
+    ]
+    create_custom_fields(fields, update=True)
     if not frappe.db.exists("Workspace", "Addons - E invoicing"):
         shortcuts = [{"label": title, "type": "DocType", "link_to": target} for title, target in [
             ("Company Settings", "Addons E Invoice Settings"), ("Submissions", "Addons E Invoice Submission"),

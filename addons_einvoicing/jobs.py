@@ -15,7 +15,7 @@ def lock(name):
 
 
 def route(doc):
-    if doc.document_kind not in {"sales-invoices", "sales-credit-notes"}:
+    if doc.document_kind not in {"sales-invoices", "sales-credit-notes", "purchase-invoices"}:
         raise ValueError("Unsupported document kind")
     return "/api/" + doc.document_kind
 
@@ -69,8 +69,10 @@ def send(submission):
             return
         connection = checked_connection(doc)
         # Same row lock as cancellation; either cancel wins or the durable Sending marker wins.
-        frappe.db.sql("select name from `tabSales Invoice` where name=%s for update", doc.sales_invoice)
-        if frappe.db.get_value("Sales Invoice", doc.sales_invoice, "docstatus") != 1:
+        from addons_einvoicing.sources import source_reference
+        doctype, source_name = source_reference(doc)
+        frappe.db.sql(f"select name from `tab{doctype}` where name=%s for update", source_name)
+        if frappe.db.get_value(doctype, source_name, "docstatus") != 1:
             doc.status, doc.last_error = "Stopped", "ERP invoice is no longer submitted"
             internal_save(doc)
             return

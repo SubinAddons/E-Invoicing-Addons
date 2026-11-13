@@ -40,6 +40,9 @@ def client(connection):
 
 
 def build(invoice, connection):
+    if invoice.doctype == "Purchase Invoice":
+        from addons_einvoicing.purchase import build as build_purchase
+        return build_purchase(invoice, connection)
     customer = frappe.get_doc("Customer", invoice.customer).as_dict()
     if not invoice.customer_address:
         frappe.throw("A customer billing address is required")
@@ -77,20 +80,22 @@ def build(invoice, connection):
 
 
 def prepare(invoice, connection):
-    frappe.db.sql("select name from `tabSales Invoice` where name=%s for update", invoice.name)
-    if frappe.db.get_value("Sales Invoice", invoice.name, "docstatus") != 1:
+    from addons_einvoicing.sources import source_field
+    field = source_field(invoice.doctype)
+    frappe.db.sql(f"select name from `tab{invoice.doctype}` where name=%s for update", invoice.name)
+    if frappe.db.get_value(invoice.doctype, invoice.name, "docstatus") != 1:
         frappe.throw("Only submitted invoices can be queued")
-    key = digest([invoice.name, connection.environment])
+    key = digest([invoice.doctype, invoice.name, connection.environment]) if field == "purchase_invoice" else digest([invoice.name, connection.environment])
     existing = frappe.db.get_value("Addons E Invoice Submission", {"source_key": key}, "name")
     if existing:
         return frappe.get_doc("Addons E Invoice Submission", existing)
     payload, expected = build(invoice, connection)
     doc = frappe.get_doc({"doctype": "Addons E Invoice Submission", "source_key": key,
-        "company": invoice.company, "sales_invoice": invoice.name, "connection": connection.name,
+        "company": invoice.company, field: invoice.name, "connection": connection.name,
         "environment": connection.environment, "provider": connection.provider, "provider_account_id": connection.client_id,
         "supplier_trn": frappe.db.get_value("Company", invoice.company, "tax_id") if connection.provider == "Fynamics" else None, "org_id": connection.org_id,
         "business_profile_id": connection.business_profile_id, "api_version": connection.api_version,
-        "document_kind": "sales-credit-notes" if invoice.is_return else "sales-invoices",
+        "document_kind": "purchase-invoices" if field == "purchase_invoice" else ("sales-credit-notes" if invoice.is_return else "sales-invoices"),
         "status": "Queued", "operation": "Create", "request_json": canonical(payload),
         "expected_json": canonical(expected), "payload_hash": digest(payload), "attempts": 0})
     internal_save(doc)
@@ -111,11 +116,16 @@ def audit(doc, action, detail):
 
 def verify_identity(doc, response):
     request = json.loads(doc.request_json)
-    supplier = response.get("accounting_supplier_party") or {}
+    supplier = response.get("accounting_customer_party" if getattr(doc, "purchase_invoice", None) else "accounting_supplier_party") or {}
     if (response.get("org_id") != doc.org_id or supplier.get("profile_id") != doc.business_profile_id
             or response.get("document_number") != request["document_number"]
             or response.get("document_currency_code") != request["document_currency_code"]):
         raise ValueError("Provider document identity does not match company/profile/number/currency")
+    if getattr(doc, "purchase_invoice", None):
+        expected_supplier = request["accounting_supplier_party"]
+        actual_supplier = response.get("accounting_supplier_party") or {}
+        if response.get("invoice_type_code") != "389" or any(actual_supplier.get(k) != expected_supplier.get(k) for k in ("endpoint_id", "endpoint_scheme_id")):
+            raise ValueError("Purchase supplier or self-billing type mismatch")
     import uuid
     uuid.UUID(response["id"])
     if doc.provider_uuid and response["id"] != doc.provider_uuid:

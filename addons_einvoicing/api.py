@@ -8,8 +8,10 @@ from addons_einvoicing.permissions import require_operator
 from addons_einvoicing.service import audit, build, client, connection_for, enqueue, internal_save, prepare
 
 
-def source(name):
-    invoice = frappe.get_doc("Sales Invoice", name)
+def source(name, doctype="Sales Invoice"):
+    from addons_einvoicing.sources import source_field
+    source_field(doctype)
+    invoice = frappe.get_doc(doctype, name)
     require_operator(invoice)
     return invoice
 
@@ -17,33 +19,37 @@ def source(name):
 def submission_doc(name):
     doc = frappe.get_doc("Addons E Invoice Submission", name)
     doc.check_permission("read")
-    source(doc.sales_invoice)
+    from addons_einvoicing.sources import source_reference
+    doctype, name = source_reference(doc)
+    source(name, doctype)
     return doc
 
 
 @frappe.whitelist(methods=["POST"])
-def preview(sales_invoice):
-    invoice = source(sales_invoice)
+def preview(sales_invoice, doctype="Sales Invoice"):
+    invoice = source(sales_invoice, doctype)
     config = connection_for(invoice.company, active=False)
     payload, expected = build(invoice, config)
     return {"payload": payload, "expected": expected, "environment": config.environment}
 
 
 @frappe.whitelist(methods=["POST"])
-def queue_invoice(sales_invoice):
-    invoice = source(sales_invoice)
+def queue_invoice(sales_invoice, doctype="Sales Invoice"):
+    invoice = source(sales_invoice, doctype)
     if not invoice.get("custom_addons_einv_enabled"):
         frappe.throw("Enable E-Invoicing on this invoice first")
     return prepare(invoice, connection_for(invoice.company)).name
 
 
 @frappe.whitelist()
-def invoice_status(sales_invoice):
-    invoice = frappe.get_doc("Sales Invoice", sales_invoice)
+def invoice_status(sales_invoice, doctype="Sales Invoice"):
+    from addons_einvoicing.sources import source_field
+    field = source_field(doctype)
+    invoice = frappe.get_doc(doctype, sales_invoice)
     invoice.check_permission("read")
     if not set(frappe.get_roles()) & {"Addons E Invoice Operator", "System Manager"}:
         return []
-    return frappe.get_list("Addons E Invoice Submission", filters={"sales_invoice": invoice.name},
+    return frappe.get_list("Addons E Invoice Submission", filters={field: invoice.name},
         fields=["name", "status", "environment", "provider_uuid", "provider", "last_error"], order_by="creation desc")
 
 
@@ -65,7 +71,9 @@ def correct_and_retry(submission):
             frappe.throw("Fynamics has no documented update/resubmission endpoint; resolve this document with the provider")
         if doc.provider_uuid and doc.overall_status != "VALIDATION_FAILED":
             frappe.throw("The provider document is not eligible for resubmission")
-        invoice = source(doc.sales_invoice)
+        from addons_einvoicing.sources import source_reference
+        source_type, source_name = source_reference(doc)
+        invoice = source(source_name, source_type)
         if invoice.docstatus != 1:
             frappe.throw("Invoice must remain submitted")
         payload, expected = build(invoice, connection_for(doc.company))
@@ -111,11 +119,11 @@ def download_artifacts(submission, pdf_only=False):
 
 
 @frappe.whitelist(methods=["POST"])
-def download_invoice_pdf(sales_invoice):
+def download_invoice_pdf(sales_invoice, doctype="Sales Invoice"):
     """Fetch the original provider PDF only for the latest approved invoice."""
     from addons_einvoicing.invoice_output import latest_submission
-    invoice = source(sales_invoice)
-    row = latest_submission(invoice.name)
+    invoice = source(sales_invoice, doctype)
+    row = latest_submission(invoice.name, doctype)
     if invoice.docstatus != 1 or not row or row.status != "Approved" or not row.provider_uuid:
         frappe.throw("The latest e-invoice submission must be approved before downloading")
     if row.provider != "ArdentaxIT":
@@ -200,9 +208,9 @@ def dashboard(company=None, environment=None, days=30):
         order_by="creation asc", limit_page_length=0)
     counts, trend = summarize(rows)
     recent = frappe.get_list(doctype, filters=filters,
-        fields=["name", "sales_invoice", "company", "provider", "status", "environment", "modified"], order_by="modified desc", limit_page_length=20)
+        fields=["name", "sales_invoice", "purchase_invoice", "company", "provider", "status", "environment", "modified"], order_by="modified desc", limit_page_length=20)
     attention = frappe.get_list(doctype, filters={**filters, "status": ["in", ["Unknown", "Mismatch", "Error", "Rejected", "Validation Failed"]]},
-        fields=["name", "sales_invoice", "status"], order_by="modified desc", limit_page_length=5)
+        fields=["name", "sales_invoice", "purchase_invoice", "status"], order_by="modified desc", limit_page_length=5)
     settings = []
     can_configure = "System Manager" in frappe.get_roles()
     if can_configure:

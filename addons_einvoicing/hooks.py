@@ -7,8 +7,10 @@ app_license = "MIT"
 required_apps = ["erpnext"]
 after_install = "addons_einvoicing.install.setup"
 after_migrate = "addons_einvoicing.install.setup"
-doctype_js = {"Sales Invoice": "public/js/sales_invoice.js"}
+doctype_js = {"Sales Invoice": "public/js/sales_invoice.js", "Purchase Invoice": "public/js/purchase_invoice.js"}
 doc_events = {
+    "Supplier": {"validate": "addons_einvoicing.supplier.validate"},
+    "Purchase Invoice": {"before_submit": "addons_einvoicing.events.before_submit", "on_submit": "addons_einvoicing.events.on_submit", "before_cancel": "addons_einvoicing.events.before_cancel"},
     "Customer": {"validate": "addons_einvoicing.customer.validate"},
     "Sales Invoice": {
         "before_submit": "addons_einvoicing.events.before_submit",
@@ -26,4 +28,4 @@ has_permission = {
     for name in ("Addons E Invoice Submission", "Addons E Invoice Webhook Event", "Addons E Invoice Inbox", "Addons E Invoice Audit")
 }
 
-doctype_list_js = {"Sales Invoice": "public/js/sales_invoice_list.js"}
+doctype_list_js = {"Sales Invoice": "public/js/sales_invoice_list.js", "Purchase Invoice": "public/js/purchase_invoice_list.js"}

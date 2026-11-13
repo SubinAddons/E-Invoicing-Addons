@@ -13,6 +13,7 @@
     "provider",
     "enabled",
     "auto_submit",
+    "auto_submit_purchase",
     "environment",
     "api_base_url",
     "api_version",
@@ -227,6 +228,12 @@
       "depends_on": "eval:doc.provider==\"Fynamics\"",
       "mandatory_depends_on": "eval:doc.provider==\"Fynamics\"",
       "options": "Email"
+    },
+    {
+      "fieldname": "auto_submit_purchase",
+      "label": "Queue on Purchase Invoice Submit",
+      "fieldtype": "Check",
+      "default": "0"
     }
   ],
   "permissions": [
